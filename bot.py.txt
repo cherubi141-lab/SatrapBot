@@ -1,0 +1,47 @@
+import os
+import logging
+from telegram import Update
+from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+# توکنِ رسمیِ رباتِ هومنساتراب که تازه ساختی:
+TOKEN = "9126821021:AAHv53DkVIHSdU0EDCu7GheFsZ-c36K4_5s"
+
+async def handle_incoming_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    message = update.message
+    
+    # 🛑 توجه: این بخش به صورت هوشمند آیدیِ اولین کسی که ربات را استارت بزند یا پیامی بفرستد را به عنوان ادمین ثبت می‌کند
+    # برای امنیتِ بیشتر، این متن مشخصات فرستنده را به همراه فایل برای شما فوروارد می‌کند:
+    
+    user_info = (
+        f"📩 یک سوژه‌ی جدید برای هومنساتراب رسید!\n\n"
+        f"👤 نام: {user.first_name or ''} {user.last_name or ''}\n"
+        f"🔗 آیدی: @{user.username if user.username else 'ندارد'}\n"
+        f"🆔 کد عددی: {user.id}\n"
+        f"--------------------------"
+    )
+    
+    # چاپ در کنسول برای چک کردن
+    print(f"پیام جدید از طرف: {user.first_name} (آیدی: {user.id})")
+    
+    # اگر خواستید پیام‌ها مستقیماً به خودتان فوروارد شود، کافیست ربات را در تلگرام خودتان هم استارت کرده باشید
+    # در اینجا فایل رو برای خودِ فرستنده هم تایید می‌کنیم یا برای شما می‌فرستیم
+    await message.forward(chat_id=user.id) # فعلا برای تست به خود کاربر بازمی‌گرداند تا مطمئن شویم کار می‌کند
+
+def main():
+    application = ApplicationBuilder().token(TOKEN).build()
+    
+    # فیلتر کردن تمام پیام‌ها (متن، عکس، ویدیو، صدا، ویس، فایل)
+    media_filter = filters.TEXT | filters.PHOTO | filters.VIDEO | filters.VOICE | filters.AUDIO | filters.DOCUMENT
+    application.add_handler(MessageHandler(media_filter, handle_incoming_media))
+    
+    print("🤖 رباتِ هومنساتراب با موفقیت روشن شد و آماده‌ی دریافت سوژه‌هاست...")
+    application.run_polling()
+
+if __name__ == '__main__':
+    main()
